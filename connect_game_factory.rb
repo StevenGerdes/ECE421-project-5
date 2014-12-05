@@ -29,11 +29,11 @@ class ConnectGameFactory
     @titles = {:connect4 => 'Connect Four', :otto_toot => 'OTTO TOOT'}
     @game_mode = Hash.new
     @game_mode[:connect4] = [
-        PlayerModel.new(TokenGenerator.new('FF0000', 'r'), Connect4Checker.new('r')),
-        PlayerModel.new(TokenGenerator.new('0000FF', 'g'), Connect4Checker.new('g'))]
+        PlayerModel.new(TokenGenerator.new('r'), Connect4Checker.new('r')),
+        PlayerModel.new(TokenGenerator.new('g'), Connect4Checker.new('g'))]
     @game_mode[:otto_toot] = [
-        PlayerModel.new(TokenGenerator.new('FF0000', 'o'), PatternChecker.new(['o','t','t','o'])),
-        PlayerModel.new(TokenGenerator.new('0000FF', 't'), PatternChecker.new(['t','o','o','t'])),
+        PlayerModel.new(TokenGenerator.new('o'), PatternChecker.new(['o','t','t','o'])),
+        PlayerModel.new(TokenGenerator.new('t'), PatternChecker.new(['t','o','o','t'])),
     ]
 
 
