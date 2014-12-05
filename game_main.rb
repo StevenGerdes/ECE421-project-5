@@ -17,8 +17,9 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	@broker_proxy = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50500).proxy('gamebroker')
-    StartView.new(self) unless $DEBUG
+	@broker_proxy = XMLRPC::Client.new('E5-05-11', '/RPC2', 50500).proxy('gamebroker')
+    @game_list = []
+	StartView.new(self) unless $DEBUG
   end
 
   method_contract(
@@ -34,15 +35,16 @@ class GameMain
   def create_game(user_name, players, game_type)
 	
 	hostname, port, game_id = @broker_proxy.create_game(user_name, players, game_type)
-   	puts port 
-	host_proxy = HostEventProxy.new(hostname, port, game_id)
-	GameView.new(host_proxy)
-	Thread.new{ 
+	game_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
+	client_proxy = HostEventProxy.new(game_id, game_proxy)
+	GameView.new(client_proxy)
+
+	pid = Thread.new{ 
 		server = XMLRPC::Server.new(port, ENV['HOSTNAME'])
 		server.add_handler(HostEventProxy::INTERFACE, host_proxy)
 		server.serve
 	}
-
+	@games_list.push({ :thread => pid, :id => game_id })
   end
   
   #Broker Proxy pass throughs

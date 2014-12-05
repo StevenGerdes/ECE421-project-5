@@ -3,6 +3,7 @@ require 'xmlrpc/client'
 
 require './contract'
 
+GameInfo = Struct.new(:connect_game, :game_state, :proxy)
 class GamesHost
   include Contract
 
@@ -16,12 +17,18 @@ class GamesHost
 	meth 'int player_turn(id)'
 	meth 'string title(id)'
   	meth 'void shutdown()'
+  	meth 'string register_client(id, player, hostname, port)'
   }
+
 
   def self.new_server(hostname, port)
 	server = XMLRPC::Server.new(port, hostname)
 	server.add_handler(GamesHost::INTERFACE, GamesHost.new)
 	server.serve
+  end
+
+  def initialize
+	@game_list = Hash.new
   end
 
   method_contract(
@@ -32,8 +39,8 @@ class GamesHost
        lambda{|this, game_id| !this.game_state(game_id).nil?}])
 
   def create_game(game_id, players, type)
-	game_list[game_id]
 	game_factory = ConnectGameFactory.new(players.to_i, type)
+	game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil)
   end
 
   def register_client(game_id, player, hostname, port)
@@ -41,12 +48,12 @@ class GamesHost
 	game.proxy = XMLRPC::Client.new(hostname,'/RPC2', port).proxy('client')
 	
 	game.game_state.on_change.listen{
-		game.proxy.on_change
+		game.proxy.on_change_fire
 	}
 
 	game.connect_game.on_win.listen{ |winner|
 		if(winner == player)
-			game.proxy.on_win
+			game.proxy.on_win_fire
 		end
 	}
   end
@@ -66,7 +73,7 @@ class GamesHost
 
   #getter for game state, no need for contracts
   def game_state(game_id)
-
+	@game_list[game_id].game_state
   end
   
   def shutdown
@@ -78,7 +85,6 @@ class GamesHost
   def get_token(id, coord) 	game_state(id).get_token(coord)	end
   def player_turn(id)		game_state(id).player_turn		end
   def title(id)				
-  	return 'blah'
 	type = game_state(id).type
 	if(type == 'connect4')
 		return 'Connect 4'

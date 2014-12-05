@@ -2,21 +2,28 @@ require './simple_event'
 
 class HostEventProxy
  
-	def initialize(hostname, port, game_id)
-		puts port
-		@host_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
-		@host_proxy.register_client(game_id, 1, ENV['HOSTNAME'], port)
+ 	attr_reader :on_change, :on_win
+	
+	INTERFACE = XMLRPC::interface('hosteventproxy'){
+		meth 'void on_change_fire()'
+		meth 'void on_win_fire()'
+	}
+
+	def initialize(game_id, proxy)
+		@host_proxy = proxy
 		@on_change = SimpleEvent.new
 		@on_win = SimpleEvent.new
 		@id = game_id
 	end
 
-	def on_change
+	def on_change_fire
 		on_change.fire
+		''
 	end
 
-	def on_win
+	def on_win_fire
 		on_win.fire
+		''
 	end
 
 #Host proxy pass throughs
