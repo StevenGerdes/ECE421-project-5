@@ -5,7 +5,6 @@ class HostEventProxy
 	def initialize(hostname, port, game_id)
 		puts port
 		@host_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
-		@host_proxy.test
 		@host_proxy.register_client(game_id, 1, ENV['HOSTNAME'], port)
 		@on_change = SimpleEvent.new
 		@on_win = SimpleEvent.new

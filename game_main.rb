@@ -17,7 +17,7 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	@broker_proxy = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50501).proxy('gamebroker')
+	@broker_proxy = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50500).proxy('gamebroker')
     StartView.new(self) unless $DEBUG
   end
 
