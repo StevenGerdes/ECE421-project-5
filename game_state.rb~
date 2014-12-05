@@ -4,8 +4,8 @@ require './token'
 
 class GameState
   include Contract
-  attr_reader :rows, :columns, :players, :on_change, :board, :on_turn_change, :type
-  attr_accessor :player_turn, :last_played
+  attr_reader :rows, :columns, :player_turn, :on_change, :board, :on_turn_change, :type
+  attr_accessor :players, :last_played
 
   class_invariant([
                       lambda { |obj| obj.rows > 0 },
