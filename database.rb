@@ -1,6 +1,7 @@
 require 'mysql'
 
 UserInfo = Struct.new(:user_name, :played, :wins, :losses)
+GameListElement = Struct.new(:id, :user1, :user2, :type)
 
 class Database
   def initialize
@@ -57,7 +58,6 @@ class Database
 
   def save_game(game_id, user1, user2, game_state)
     delete_saved_game(game_id)
-puts("Save Game: #{game_id}, #{user1}, #{user2}, #{game_state.type}, #{get_board(game_state)}, #{game_state.player_turn}, #{game_state.last_played.row} #{game_state.last_played.column}")
     @db.query("INSERT INTO SavedGames 
       (GameID, User1, User2, GameType, Board, Turn, LastPlayed)
       VALUES (#{game_id},
@@ -76,15 +76,23 @@ puts("Save Game: #{game_id}, #{user1}, #{user2}, #{game_state.type}, #{get_board
   def get_saved_game(game_id)
     res = @db.query("SELECT Board, GameType, Turn, LastPlayed FROM SavedGames WHERE GameID = #{game_id};")
     row = res.fetch_row
-puts("#{row[0]} #{row[1]} #{row[2]} #{row[3]}")
     rows, columns = get_col_row(row[0])
     gs = GameState.new(2, row[1].to_sym, rows, columns)
     set_board(gs, row[0], rows, columns)
     coord = row[3].split
-puts("#{coord}")
     gs.last_played = Coordinate.new(coord[0].to_i, coord[1].to_i)
     gs.player_turn = row[2].to_i
     gs
+  end
+
+  def get_saved_games_list(username)
+    result = Array.new()
+    res = @db.query("SELECT DISTINCT GameID, User1, User2, GameType FROM SavedGames WHERE User1 = '#{username}' OR User2 = '#{username}';")
+    while row = res.fetch_row do
+      result.push(GameListElement.new(row[0], row[1], row[2], row[3]))
+puts(row[3])
+    end
+    result
   end
 
 private
@@ -101,13 +109,11 @@ private
       end
       result
     }
-puts(result)
   result
   end
 
   def get_col_row(board)
     splitboard = board.split
-puts("rows: #{splitboard[0]}, columns: #{splitboard[1]}")
     return splitboard[0].to_i, splitboard[1].to_i
   end
 
