@@ -12,36 +12,24 @@ class StartView
     window = @builder.get_object('mainWindow')
     window.signal_connect('destroy') { Gtk.main_quit }
 
-    open_games_view = @builder.get_object('open_game_list')
-	renderer = Gtk::CellRendererText.new
-	column = Gtk::TreeViewColumn.new("Host Name", renderer, :text => 0)
-	open_games_view.append_column(column)
-	column = Gtk::TreeViewColumn.new("Game Type", renderer, :text => 1)
-	open_games_view.append_column(column)
+	@name_field = @builder.get_object('name_entry')
+    
+	refresh_games_list = init_game_list(game_main)
+	refresh_saved_list = init_saved_list(game_main)
+	refresh_stats_list = init_stat_list(game_main)
 	
-	open_games_view.model = Gtk::ListStore.new(String, String)
-
-	refresh_games_list = Proc.new{
-			game_main.open_games_list.each{ |item|
-			row = open_games_view.model.prepend
-			row[0] = item[:user1]
-			row[1] = item[:game_type]
-		}
-	}
-	
-	refresh_games_list.call()
 
 	refresh_button = @builder.get_object('refresh_button').signal_connect('clicked'){
 		refresh_games_list.call()
+		refresh_saved_list.call()
+		refresh_stats_list.call()
 	}
 
-	#refresh_games_list.call()
 
 	play_button = @builder.get_object('play_button')
 
-	name_field = @builder.get_object('name_entry')
-	name_field.signal_connect('changed'){ 	
-		if name_field.text == ''
+	@name_field.signal_connect('changed'){ 	
+		if @name_field.text == ''
 			play_button.sensitive = false
 		else
 			play_button.sensitive = true
@@ -63,11 +51,96 @@ class StartView
         players = 2
       end
 
-		name = name_field.text
+		name = @name_field.text
       game_main.create_game( name, players, type )
 	  }
 	
     window.show()
     Gtk.main()
   end
+
+
+private
+
+	def init_game_list(game_main)
+		open_game_view = @builder.get_object('open_game_list')
+		renderer = Gtk::CellRendererText.new
+		column = Gtk::TreeViewColumn.new("Host Name", renderer, :text => 1)
+		open_game_view.append_column(column)
+		column = Gtk::TreeViewColumn.new("Game Type", renderer, :text => 2)
+		open_game_view.append_column(column)
+		
+		open_game_view.model = Gtk::ListStore.new(Integer, String, String)
+	
+			refresh_game_list = Proc.new{
+				open_game_view.model.clear
+				game_main.open_game_list.each_with_index{ |item, index|
+				row = open_game_view.model.prepend
+				row[0] = item['id']
+				row[1] = item['user1']
+				row[2] = item['game_type']
+			}
+		}
+		
+		open_game_view.signal_connect("row-activated") do |view, path, column|
+			game_main.join_game(open_game_view.selection.selected[0], @name_field.text)
+		end
+
+		refresh_game_list.call
+		refresh_game_list
+
+	end
+
+	def init_saved_list(game_main)
+		list = @builder.get_object('saved_game_list')
+		renderer = Gtk::CellRendererText.new
+		column = Gtk::TreeViewColumn.new("Player 1", renderer, :text => 0)
+		list.append_column(column)
+		column = Gtk::TreeViewColumn.new("Player 2", renderer, :text => 1)
+		list.append_column(column)
+		column = Gtk::TreeViewColumn.new("Game Type", renderer, :text => 2)
+		list.append_column(column)
+		
+		list.model = Gtk::ListStore.new(String, String, String)
+
+		refresh_list = Proc.new{
+			list.model.clear
+			game_main.saved_game_list(@name_field.text).each{ |item|
+				row = list.model.prepend
+				row[0] = item['user1']
+				row[1] = item['user2']
+				row[2] = item['game_type']
+
+			}
+		}
+
+		refresh_list.call
+		return refresh_list
+	end
+	
+	def init_stat_list(game_main)
+		list = @builder.get_object('stat_list')
+		renderer = Gtk::CellRendererText.new
+		column = Gtk::TreeViewColumn.new("Player", renderer, :text => 0)
+		list.append_column(column)
+		column = Gtk::TreeViewColumn.new("wins", renderer, :text => 1)
+		list.append_column(column)
+		column = Gtk::TreeViewColumn.new("losses", renderer, :text => 2)
+		list.append_column(column)
+		
+		list.model = Gtk::ListStore.new(String, String, String)
+
+		refresh_list = Proc.new{
+			list.model.clear
+			game_main.stat_list.each{ |item|
+				row = list.model.prepend
+				row[0] = item['user']
+				row[1] = item['wins'].to_s
+				row[2] = item['losses'].to_s
+			}
+		}
+
+		refresh_list.call
+		return refresh_list
+	end
 end

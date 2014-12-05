@@ -3,7 +3,7 @@ require './game_main'
 
 class GameView
 
-  def initialize(game, game_state)
+  def initialize(game)
     Gtk.init
 
     @builder = Gtk::Builder::new
@@ -15,12 +15,12 @@ class GameView
     window.title = game.title
     menu = @builder.get_object('ResetButton')
     menu.signal_connect('clicked') {
-      game_state.reset }
+      game.reset }
 
     @picture_grid = @builder.get_object('play_grid')
 
-    game_state.on_change.listen {
-      update_ui(game_state)
+    game.on_change.listen {
+      update_ui(game)
     }
 
     game.on_win.listen { |winner|
@@ -30,26 +30,26 @@ class GameView
     }
 
     @game_board = Hash.new
-    @game_state = game_state
-    (0..@game_state.columns - 1).each { |col|
+    @game = game
+    (0..@game.columns - 1).each { |col|
       @builder.get_object("col#{col}").signal_connect('clicked') {
         game.play(col)
       }
-      (0..@game_state.rows - 1).each { |row|
+      (0..@game.rows - 1).each { |row|
         @game_board[[row, col]] = @builder.get_object("#{row}_#{col}")
       }
     }
     @player_turn = @builder.get_object('PlayerNumber')
-    @player_turn.text = @game_state.player_turn.to_s
+    @player_turn.text = game.player_turn.to_s
     window.show()
     Gtk.main()
   end
 
-  def update_ui(game_state)
-    @player_turn.text = game_state.player_turn.to_s
-    (0..@game_state.columns - 1).each { |col|
-      (0..@game_state.rows - 1).each { |row|
-        token = @game_state.get_token(Coordinate.new(row, col))
+  def update_ui(game)
+    @player_turn.text = game.player_turn.to_s
+    (0..game.columns - 1).each { |col|
+      (0..game.rows - 1).each { |row|
+        token = game.get_token(Coordinate.new(row, col))
         if token.nil?
           current_image = Gtk::Stock::MEDIA_STOP
         elsif token.value == 'r'

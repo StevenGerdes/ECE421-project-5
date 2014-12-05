@@ -1,8 +1,10 @@
+require 'xmlrpc/client'
+
 require './simple_event'
 require './command_view'
 require './connect_game_factory'
 require './contract'
-require 'xmlrpc/client'
+require './host_event_proxy'
 
 unless $DEBUG
   require './start_view'
@@ -15,8 +17,8 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	game_main_proxy = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50501).proxy('broker')
-    StartView.new(game_main_proxy) unless $DEBUG
+	@broker_proxy = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50501).proxy('gamebroker')
+    StartView.new(self) unless $DEBUG
   end
 
   method_contract(
@@ -29,13 +31,23 @@ class GameMain
       [])
   #Starts the game depending on the type and the number of players
   #if it isn't in debug mode it launches the game UI
-  def create_game(user_name, players, type)
-    game_factory = ConnectGameFactory.new(players.to_i, type)
+  def create_game(user_name, players, game_type)
+	
+	hostname, port, game_id = @broker_proxy.create_game(user_name, players, game_type)
+   	puts port 
+	host_proxy = HostEventProxy.new(hostname, port, game_id)
+	GameView.new(host_proxy)
+	Thread.new{ 
+		server = XMLRPC::Server.new(port, ENV['HOSTNAME'])
+		server.add_handler(HostEventProxy::INTERFACE, host_proxy)
+		server.serve
+	}
 
-    GameView.new(game_factory.connect_game, game_factory.game_state) unless $DEBUG
-
-    CommandView.new(game_factory) if $DEBUG
   end
-
+  
+  #Broker Proxy pass throughs
+  def saved_game_list(name) @broker_proxy.saved_game_list(name) end
+  def open_game_list() 		@broker_proxy.open_game_list 		end
+  def stat_list() 			@broker_proxy.stat_list 			end
 
 end
