@@ -18,28 +18,29 @@ class ConnectGameFactory
 
   method_contract(
       #preconditions
-      [lambda{|obj, players, mode| players.respond_to?(:to_i)},
-       lambda{|obj, players, mode| mode.is_a?(Symbol)}],
+      [lambda{|obj, players, mode| players.respond_to?(:to_i)}],
       #postconditions
       [])
 
   def initialize(players, mode)
-    @player_count = 2
+
+	@player_count = 2
     @mode = mode
     @titles = {:connect4 => 'Connect Four', :otto_toot => 'OTTO TOOT'}
     @game_mode = Hash.new
-    @game_mode[:connect4] = [
+    
+	@game_mode[:connect4] = [
         PlayerModel.new(TokenGenerator.new('r'), Connect4Checker.new('r')),
         PlayerModel.new(TokenGenerator.new('g'), Connect4Checker.new('g'))]
     @game_mode[:otto_toot] = [
         PlayerModel.new(TokenGenerator.new('o'), PatternChecker.new(['o','t','t','o'])),
         PlayerModel.new(TokenGenerator.new('t'), PatternChecker.new(['t','o','o','t'])),
     ]
-
-
-    if players.to_i == 1
+    
+	if players.to_i == 1
       init_opponent
     end
+
   end
 
   #singleton getter for a connect game
@@ -86,7 +87,7 @@ class ConnectGameFactory
   #getter for game state
   def game_state
     if @game_state.nil?
-      @game_state = GameState.new(@player_count, 6, 7)
+      @game_state = GameState.new(@player_count,@mode, 6, 7)
     end
     @game_state
   end

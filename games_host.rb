@@ -1,14 +1,14 @@
 require 'xmlrpc/server'
 require 'xmlrpc/client'
 
+require './connect_game_factory'
 require './contract'
 
 GameInfo = Struct.new(:connect_game, :game_state, :proxy)
 class GamesHost
   include Contract
 
-  class_invariant([lambda{|this| this.num_active_games <= 10 },
-                  lambda{|this| this.num_active_games >= 0 }])
+ class_invariant([])
   
   INTERFACE = XMLRPC::interface('gameshost'){
 	meth 'int columns(id)'
@@ -16,7 +16,9 @@ class GamesHost
 	meth 'struct get_token(id, coordinate)'
 	meth 'int player_turn(id)'
 	meth 'string title(id)'
-  	meth 'void shutdown()'
+  	meth 'void play(id, column)'
+	meth 'void shutdown()'
+	meth 'void create_game(gameid, players, type)'
   	meth 'string register_client(id, player, hostname, port)'
   }
 
@@ -33,18 +35,18 @@ class GamesHost
 
   method_contract(
       #preconditions
-      [lambda{|this, game_id| !game_id.nil?}],
+      [],
       #preconditions
-      [lambda{|this, game_id| this.num_active_games > 0},
-       lambda{|this, game_id| !this.game_state(game_id).nil?}])
+      [])
 
   def create_game(game_id, players, type)
-	game_factory = ConnectGameFactory.new(players.to_i, type)
-	game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil)
+	game_factory = ConnectGameFactory.new(players.to_i, type.to_sym)
+	@game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil)
+	''
   end
 
   def register_client(game_id, player, hostname, port)
-  	game = game_list[game_id]
+  	game = @game_list[game_id]
 	game.proxy = XMLRPC::Client.new(hostname,'/RPC2', port).proxy('client')
 	
 	game.game_state.on_change.listen{

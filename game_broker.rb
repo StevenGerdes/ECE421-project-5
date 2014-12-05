@@ -36,15 +36,14 @@ class GameBroker
 
   method_contract(
       #preconditions
-      [lambda { |this, user_name, player_count, game_type| user_name.respond_to?(:to_s) },
-       lambda { |this, user_name, player_count, game_type| game_type.to_sym == :connect4 || game_type.to_sym == :otto_toot }],
+      [],
       #postconditions
-		[])
+	  [])
   def create_game(user_name, player_count, game_type)
   	@open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type})
-  	
 	server = get_open_server
-	puts server.port
+	server.proxy.create_game(last_id, player_count, game_type)
+	
 	return server.hostname, server.port, last_id 	
   end
 
@@ -104,7 +103,7 @@ class GameBroker
   end
 
   def get_open_server
-	return server_list.last 	
+	return server_list.first	
   end
 	
 
