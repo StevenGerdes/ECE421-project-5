@@ -15,7 +15,7 @@ class Database
   def get_game_id()
     res = @db.query("SELECT MAX(GameID) FROM SavedGames;");
     row = res.fetch_row
-    row[0]
+    row[0].to_i
   end
 
   def record_results(winner, loser, is_tie)
