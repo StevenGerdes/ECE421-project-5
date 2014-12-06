@@ -1,5 +1,6 @@
 require 'gtk2'
 require './game_main'
+require './game_state'
 
 class GameView
   def initialize(game)
@@ -19,7 +20,6 @@ class GameView
     @picture_grid = @builder.get_object('play_grid')
 
     game.on_change.listen {
-      puts 'test'
 	  update_ui
     }
 
@@ -47,23 +47,33 @@ class GameView
   end
 
   def update_ui
-    @player_turn.text = @game.player_turn.to_s
-    (0..@game.columns - 1).each { |col|
-      (0..@game.rows - 1).each { |row|
-        token = @game.get_token(Coordinate.new(row, col))
-		if token == ''
-          current_image = Gtk::Stock::MEDIA_STOP
-        elsif token['value'] == 'r'
-          current_image = Gtk::Stock::NO
-        elsif token['value'] == 'g'
-          current_image = Gtk::Stock::YES
-        elsif token['value'] == 't'
-          current_image = Gtk::Stock::ADD
-        elsif token['value'] == 'o'
-          current_image = Gtk::Stock::CDROM
-        end
-		@game_board[[row, col]].set(current_image, Gtk::IconSize::BUTTON)
-      }
-    }
+	@player_turn.text = @game.player_turn.to_s
+	strgs = @game.game_state_string
+	puts strgs
+	splittokens = strgs.split(//)
+	for i in 0..5
+		for j in 0..6
+			token = splittokens[i*(7) + j]
+			if token == '-'
+	   	       current_image = Gtk::Stock::MEDIA_STOP
+	   	     elsif token == 'r'
+	   	       current_image = Gtk::Stock::NO
+	   	     elsif token == 'g'
+    	      current_image = Gtk::Stock::YES
+    	   	 elsif token == 't'
+        	  current_image = Gtk::Stock::ADD
+	       	 elsif token == 'o'
+    	   	   current_image = Gtk::Stock::CDROM
+     	  	 end
+			@game_board[[i, j]].set(current_image, Gtk::IconSize::BUTTON)
+		end
+	end
+=begin
+	(0..gs.columns - 1).each { |col|
+      (0..gs.rows - 1).each { |row|
+        token = gs.get_token(Coordinate.new(row, col))
+=end
+     # }
+    #}
   end
 end

@@ -4,6 +4,7 @@ require 'xmlrpc/client'
 require './database'
 require './connect_game_factory'
 require './contract'
+require './r_client'
 
 GameInfo = Struct.new(:connect_game, :game_state, :proxy)
 class GamesHost
@@ -17,13 +18,15 @@ class GamesHost
 	meth 'struct get_token(id, coordinate)'
 	meth 'int player_turn(id)'
 	meth 'string title(id)'
-  meth 'void play(id, column)'
+	meth 'coord last_played(id)'
+meth 'void play(id, column)'
   meth 'void reset(id)'
   meth 'void save_game(id)'
 	meth 'void shutdown()'
 	meth 'void create_game(gameid, players, type)'
+	meth 'string game_board_string(id)'
   meth 'string register_client(id, player, hostname, port)'
-  }
+}
 
 
   def self.new_server(hostname, port)
@@ -52,14 +55,12 @@ class GamesHost
 
   def register_client(game_id, player, hostname, port)
 	game = @game_list[game_id]
-	game.proxy = XMLRPC::Client.new(hostname,'/RPC2', port).proxy_async('hosteventproxy')
+	game.proxy = RClient.new(hostname, port, 'hosteventproxy')
 	
 	game.game_state.on_change.listen{
-	puts 'sent'
 	Thread.new{
-	game.proxy.on_change_fire
-	puts 'done'
-	}
+		game.proxy.on_change_fire
+		}
 	}
 
 	game.connect_game.on_win.listen{ |winner|
@@ -67,7 +68,6 @@ class GamesHost
 			game.proxy.on_win_fire
 		end
 	}
-	puts 'registered'
 	''
   end
 
@@ -109,6 +109,23 @@ class GamesHost
   def rows(id) 				      game_state(id).rows 			        end
   def get_token(id, coord) 	game_state(id).get_token(coord)	  end
   def player_turn(id)		    game_state(id).player_turn		    end
+  def last_played(id)		    game_state(id).last_played		    end
+  def game_board_string(id)
+	gs = game_state(id)
+	result = ''
+	(gs.rows - 1).downto(0){ |i|
+	 row_matrix = gs.row i
+	 for j in 0..gs.columns - 1
+	 	if row_matrix[j].nil?
+			result += '-'
+		else
+			result += row_matrix[j].value
+		end
+	end
+	}
+	return result
+  end
+  
   def title(id)				
 	type = game_state(id).type
 	if(type == 'connect4')
