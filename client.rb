@@ -2,9 +2,10 @@ require './contract'
 require 'uri'
 require 'xmlrpc/client'
 
+#the contracts for the host_event_proxy.rb
 class Client
 
-  class_invariant([lambda{|obj| !obj.broker.nil?}])
+  class_invariant([lambda { |obj| !obj.broker.nil? }])
 
   method_contract(
       #preconditions
