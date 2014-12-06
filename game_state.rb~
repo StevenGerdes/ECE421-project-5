@@ -4,8 +4,8 @@ require './token'
 
 class GameState
   include Contract
-  attr_reader :rows, :columns, :player_turn, :on_change, :board, :on_turn_change, :type
-  attr_accessor :players, :last_played
+  attr_reader :rows, :columns, :players, :on_change, :board, :on_turn_change, :type
+  attr_accessor :player_turn, :last_played
 
   class_invariant([
                       lambda { |obj| obj.rows > 0 },
@@ -56,8 +56,7 @@ class GameState
        lambda { |obj, token, coordinate| coordinate.respond_to?(:column) },
        lambda { |obj, token, coordinate| coordinate.row < obj.rows && coordinate.row >= 0 },
        lambda { |obj, token, coordinate| coordinate.column < obj.columns && coordinate.column >= 0 },
-       lambda { |obj, token, coordinate| token.is_a?(Token) },
-       lambda { |obj, token, coordinate| !obj.board.values.include?(token) }],
+       lambda { |obj, token, coordinate| token.is_a?(Token) }],
       #postconditions
       [lambda { |obj, result, token, coordinate| obj.board.values.include?(token) }])
 

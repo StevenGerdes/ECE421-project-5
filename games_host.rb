@@ -30,6 +30,8 @@ class GamesHost
 	server = XMLRPC::Server.new(port, hostname)
 	server.add_handler(GamesHost::INTERFACE, GamesHost.new)
 	server.serve
+
+  true
   end
 
   def initialize
@@ -97,10 +99,10 @@ class GamesHost
   	exit!
   end
 
-  def columns(id) 			game_state(id).columns 			end
-  def rows(id) 				game_state(id).rows 			end
-  def get_token(id, coord) 	game_state(id).get_token(coord)	end
-  def player_turn(id)		game_state(id).player_turn		end
+  def columns(id) 			    game_state(id).columns 			      end
+  def rows(id) 				      game_state(id).rows 			        end
+  def get_token(id, coord) 	game_state(id).get_token(coord)	  end
+  def player_turn(id)		    game_state(id).player_turn		    end
   def title(id)				
 	type = game_state(id).type
 	if(type == 'connect4')
