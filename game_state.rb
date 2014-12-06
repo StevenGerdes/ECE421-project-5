@@ -44,7 +44,6 @@ class GameState
 
   #Returns token at coordinate
   def get_token(coordinate)
-	puts coordinate
 	token = @board[[coordinate['row'], coordinate['column']]]
 	if token.nil?
 		return ''
