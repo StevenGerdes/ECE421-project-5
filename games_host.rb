@@ -5,7 +5,7 @@ require './database'
 require './connect_game_factory'
 require './contract'
 
-GameInfo = Struct.new(:connect_game, :game_state, :proxy)
+GameInfo = Struct.new(:connect_game, :game_state, :proxy, :user1, :user2)
 class GamesHost
   include Contract
 
@@ -21,7 +21,7 @@ class GamesHost
   meth 'void reset(id)'
   meth 'void save_game(id)'
 	meth 'void shutdown()'
-	meth 'void create_game(gameid, players, type)'
+	meth 'void create_game(user1, gameid, players, type)'
   meth 'string register_client(id, player, hostname, port)'
   }
 
@@ -44,9 +44,9 @@ class GamesHost
       #preconditions
       [])
 
-  def create_game(game_id, players, type)
+  def create_game(user1, game_id, players, type)
 	game_factory = ConnectGameFactory.new(players.to_i, type.to_sym)
-	@game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil)
+	@game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil, user1, nil)
 	''
   end
 
@@ -85,7 +85,13 @@ class GamesHost
 
   def save_game(game_id)
     db = Database.new
-    db.save_game(game_id, 'Tyler', 'Steven', game_state(game_id))
+    user2 = @game_list[game_id].user2
+    if user2.nil?
+      user2 = ''
+    end
+puts @game_list[game_id].user2
+puts user2
+    db.save_game(game_id, @game_list[game_id].user1, user2, game_state(game_id))
     db.close
     ''
   end
