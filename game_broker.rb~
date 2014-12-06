@@ -29,7 +29,9 @@ class GameBroker
   )
 
   def initialize
-    @last_id = -1;
+  db = Database.new
+  @last_id = db.get_game_id;
+  db.close
 	@open_game_list = []
 	@server_list = []
   end
@@ -40,8 +42,8 @@ class GameBroker
       #postconditions
 	  [])
   def create_game(user_name, player_count, game_type)
-  @open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type})
-	server = get_open_server
+  server = get_open_server
+  @open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type, :server => server})
 	server.proxy.create_game(user_name, last_id, player_count, game_type)
 	
 	return server.hostname, server.port, last_id 	
@@ -55,9 +57,10 @@ class GameBroker
        lambda { |this, game_id, user2, host_url| nil == this.open_game_list.find{ |g| g[:id] == game_id } }]
   )
 
-  def join_game(game_id, user2 )
+  def join_game(game_id, user2)
+    server = @open_game_list[game_id][:server]
   	@open_game_list.reject!{ |game| game[:id] == game_id }
-	'www.google.ca'
+	  return server.hostname, server.port
   end
   
   def register_games_host(hostname, port)

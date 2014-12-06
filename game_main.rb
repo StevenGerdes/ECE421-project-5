@@ -43,11 +43,29 @@ class GameMain
 		server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
 		server.add_handler(HostEventProxy::INTERFACE, client_proxy)
 		server.serve
-		true
+    true
 	}
 	@game_list.push({ :thread => pid, :id => game_id })
-	game_proxy.register_client(game_id, 'bob', ENV['HOSTNAME'], 50501)	
+	game_proxy.register_client(game_id, user_name, ENV['HOSTNAME'], 50501)	
+	puts 'now starting view'
 	GameView.new(client_proxy)
+  end
+
+  def join_game(game_id, user_name)
+    hostname, port = @broker_proxy.join_game(user_name, game_id)
+    game_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
+    client_proxy = HostEventProxy.new(game_id, game_proxy)
+    
+    pid = Thread.new{ 
+		  server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
+		  server.add_handler(HostEventProxy::INTERFACE, client_proxy)
+		  server.serve
+      true
+	  }
+	  @game_list.push({ :thread => pid, :id => game_id })
+	  game_proxy.register_client(game_id, user_name, ENV['HOSTNAME'], 50501)	
+	  puts 'now starting view'
+	  GameView.new(client_proxy)
   end
   
   def next_port

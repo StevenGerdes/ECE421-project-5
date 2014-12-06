@@ -19,11 +19,12 @@ class GamesHost
 	meth 'int player_turn(id)'
 	meth 'string title(id)'
 	meth 'coord last_played(id)'
-meth 'void play(id, column)'
+  meth 'void play(id, column)'
   meth 'void reset(id)'
   meth 'void save_game(id)'
 	meth 'void shutdown()'
-	meth 'void create_game(gameid, players, type)'
+	meth 'void create_game(user1, gameid, players, type)'
+  meth 'void join_game(user2, gameid)'
 	meth 'string game_board_string(id)'
   meth 'string register_client(id, player, hostname, port)'
 }
@@ -51,6 +52,10 @@ meth 'void play(id, column)'
 	game_factory = ConnectGameFactory.new(players.to_i, type.to_sym)
 	@game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil, user1, nil)
 	''
+  end
+
+  def join_game(user2, game_id)
+    @game_list[game_id].user2 = user2
   end
 
   def register_client(game_id, player, hostname, port)
@@ -95,8 +100,6 @@ meth 'void play(id, column)'
     if user2.nil?
       user2 = ''
     end
-puts @game_list[game_id].user2
-puts user2
     db.save_game(game_id, @game_list[game_id].user1, user2, game_state(game_id))
     db.close
     ''

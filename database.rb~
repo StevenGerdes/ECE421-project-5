@@ -12,6 +12,12 @@ class Database
     @db.close()
   end
 
+  def get_game_id()
+    res = @db.query("SELECT MAX(GameID) FROM SavedGames;");
+    row = res.fetch_row
+    row[0]
+  end
+
   def record_results(winner, loser, is_tie)
     if !user_exist?(winner)
       add_user(winner)
