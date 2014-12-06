@@ -8,16 +8,19 @@ class Database
     @db = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421grp3" , "W10mJODQ", "ece421grp3", 13010)
   end
 
+  #Closes connection to mysql database
   def close()
     @db.close()
   end
 
+  #return highest game ID in saved game database
   def get_game_id()
     res = @db.query("SELECT MAX(GameID) FROM SavedGames;");
     row = res.fetch_row
     row[0].to_i
   end
 
+  #update database with win/lose results
   def record_results(winner, loser, is_tie)
     if !user_exist?(winner)
       add_user(winner)
@@ -25,7 +28,7 @@ class Database
     if !user_exist?(loser)
       add_user(loser)
     end
-
+ 
     increment_field(winner, 'Played')
     increment_field(loser, 'Played')
     if !is_tie
@@ -34,6 +37,7 @@ class Database
     end
   end
 
+  #return array of user stats
   def get_stats()
     result = Array.new()
     res = @db.query("SELECT * FROM UserStats;")
@@ -43,18 +47,22 @@ class Database
     result
   end
 
+  #get number of games played for a particular user
   def get_game_count(username)
     get_count(username, 'Played')
   end
 
+  #get number of wins for a particular user
   def get_win_count(username)
     get_count(username, 'Wins')
   end
 
+  #get number of losses for a particular user
   def get_loss_count(username)
     get_count(username, 'Losses')
   end
 
+  #print out stats table, for debugging
   def print_stats_table()
     res = @db.query("SELECT * FROM UserStats;")
     while row = res.fetch_row do
@@ -62,6 +70,7 @@ class Database
     end
   end
 
+  #save current game state
   def save_game(game_id, user1, user2, game_state)
     delete_saved_game(game_id)
     @db.query("INSERT INTO SavedGames 
@@ -75,10 +84,12 @@ class Database
              '#{game_state.last_played.row} #{game_state.last_played.column}');")
   end
 
+  #removed a saved game that has been completed, or is going to be saved over
   def delete_saved_game(game_id)
     @db.query("DELETE FROM SavedGames WHERE GameID = #{game_id};")
   end
 
+  #return a saved game that will be loaded into the current game
   def get_saved_game(game_id)
     res = @db.query("SELECT Board, GameType, Turn, LastPlayed FROM SavedGames WHERE GameID = #{game_id};")
     row = res.fetch_row
@@ -91,12 +102,12 @@ class Database
     gs
   end
 
+  #get list of saved games for a particular user
   def get_saved_games_list(username)
     result = Array.new()
     res = @db.query("SELECT DISTINCT GameID, User1, User2, GameType FROM SavedGames WHERE User1 = '#{username}' OR User2 = '#{username}';")
     while row = res.fetch_row do
       result.push(GameListElement.new(row[0], row[1], row[2], row[3]))
-puts(row[3])
     end
     result
   end
