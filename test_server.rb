@@ -1,9 +1,8 @@
-require './games_host'
+require './host_event_proxy'
 
-host = ENV['HOSTNAME']
-port = 50510
-
-pid = fork{GamesHost.new_server(host, port)}
-Process.detach(pid)
-
-
+client_proxy = HostEventProxy.new(1,nil)
+Thread.new{
+server = XMLRPC::Server.new(50501, ENV['HOSTNAME'])
+server.add_handler(HostEventProxy::INTERFACE, client_proxy)
+server.serve
+}

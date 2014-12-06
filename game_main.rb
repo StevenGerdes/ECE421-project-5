@@ -17,8 +17,9 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	@broker_proxy = XMLRPC::Client.new('E5-05-10', '/RPC2', 50500).proxy('gamebroker')
+	@broker_proxy = XMLRPC::Client.new('E5-05-11', '/RPC2', 50500).proxy('gamebroker')
     @game_list = []
+	@port = 50500
 	StartView.new(self) unless $DEBUG
   end
 
@@ -36,16 +37,23 @@ class GameMain
 	hostname, port, game_id = @broker_proxy.create_game(user_name, players, game_type)
 	game_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
 	client_proxy = HostEventProxy.new(game_id, game_proxy)
-	GameView.new(client_proxy)
 
 	pid = Thread.new{ 
-		server = XMLRPC::Server.new(port, ENV['HOSTNAME'])
-		server.add_handler(HostEventProxy::INTERFACE, host_proxy)
+		server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
+		server.add_handler(HostEventProxy::INTERFACE, client_proxy)
 		server.serve
 	}
-	@games_list.push({ :thread => pid, :id => game_id })
+	@game_list.push({ :thread => pid, :id => game_id })
+	game_proxy.register_client(game_id, 'bob', ENV['HOSTNAME'], 50501)	
+	puts 'now starting view'
+	GameView.new(client_proxy)
   end
   
+  def next_port
+	@port+=1
+	return @port
+  end
+
   #Broker Proxy pass throughs
   def saved_game_list(name) @broker_proxy.saved_game_list(name) end
   def open_game_list() 		@broker_proxy.open_game_list 		end

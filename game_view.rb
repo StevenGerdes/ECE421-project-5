@@ -19,7 +19,8 @@ class GameView
     @picture_grid = @builder.get_object('play_grid')
 
     game.on_change.listen {
-      update_ui(game)
+      puts 'test'
+	  update_ui
     }
 
     game.on_win.listen { |winner|
@@ -30,7 +31,8 @@ class GameView
 
     @game_board = Hash.new
     @game = game
-    (0..@game.columns - 1).each { |col|
+    
+	(0..@game.columns - 1).each { |col|
       @builder.get_object("col#{col}").signal_connect('clicked') {
         game.play(col)
       }
@@ -44,24 +46,23 @@ class GameView
     Gtk.main()
   end
 
-  def update_ui(game)
-    @player_turn.text = game.player_turn.to_s
-    (0..game.columns - 1).each { |col|
-      (0..game.rows - 1).each { |row|
-        token = game.get_token(Coordinate.new(row, col))
-        if token.nil?
+  def update_ui
+    @player_turn.text = @game.player_turn.to_s
+    (0..@game.columns - 1).each { |col|
+      (0..@game.rows - 1).each { |row|
+        token = @game.get_token(Coordinate.new(row, col))
+		if token == ''
           current_image = Gtk::Stock::MEDIA_STOP
-        elsif token.value == 'r'
+        elsif token['value'] == 'r'
           current_image = Gtk::Stock::NO
-        elsif token.value == 'g'
+        elsif token['value'] == 'g'
           current_image = Gtk::Stock::YES
-        elsif token.value == 't'
+        elsif token['value'] == 't'
           current_image = Gtk::Stock::ADD
-        elsif token.value == 'o'
+        elsif token['value'] == 'o'
           current_image = Gtk::Stock::CDROM
         end
-
-        @game_board[[row, col]].set(current_image, Gtk::IconSize::BUTTON)
+		@game_board[[row, col]].set(current_image, Gtk::IconSize::BUTTON)
       }
     }
   end

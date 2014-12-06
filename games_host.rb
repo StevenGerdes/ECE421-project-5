@@ -51,11 +51,15 @@ class GamesHost
   end
 
   def register_client(game_id, player, hostname, port)
-  	game = @game_list[game_id]
-	game.proxy = XMLRPC::Client.new(hostname,'/RPC2', port).proxy('client')
+	game = @game_list[game_id]
+	game.proxy = XMLRPC::Client.new(hostname,'/RPC2', port).proxy_async('hosteventproxy')
 	
 	game.game_state.on_change.listen{
-		game.proxy.on_change_fire
+	puts 'sent'
+	Thread.new{
+	game.proxy.on_change_fire
+	puts 'done'
+	}
 	}
 
 	game.connect_game.on_win.listen{ |winner|
@@ -63,6 +67,8 @@ class GamesHost
 			game.proxy.on_win_fire
 		end
 	}
+	puts 'registered'
+	''
   end
 
   method_contract(
