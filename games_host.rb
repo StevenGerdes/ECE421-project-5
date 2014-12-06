@@ -22,6 +22,7 @@ class GamesHost
   meth 'void save_game(id)'
 	meth 'void shutdown()'
 	meth 'void create_game(user1, gameid, players, type)'
+  meth 'void join_game(user2, gameid)'
   meth 'string register_client(id, player, hostname, port)'
   }
 
@@ -48,6 +49,10 @@ class GamesHost
 	game_factory = ConnectGameFactory.new(players.to_i, type.to_sym)
 	@game_list[game_id] = GameInfo.new(game_factory.connect_game, game_factory.game_state, nil, user1, nil)
 	''
+  end
+
+  def join_game(user2, game_id)
+    @game_list[game_id].user2 = user2
   end
 
   def register_client(game_id, player, hostname, port)

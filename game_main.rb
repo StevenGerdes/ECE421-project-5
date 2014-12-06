@@ -17,7 +17,7 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	@broker_proxy = XMLRPC::Client.new('E5-05-11', '/RPC2', 50500).proxy('gamebroker')
+	@broker_proxy = XMLRPC::Client.new('E5-05-10', '/RPC2', 50500).proxy('gamebroker')
     @game_list = []
 	@port = 50500
 	StartView.new(self) unless $DEBUG
@@ -42,11 +42,29 @@ class GameMain
 		server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
 		server.add_handler(HostEventProxy::INTERFACE, client_proxy)
 		server.serve
+true
 	}
 	@game_list.push({ :thread => pid, :id => game_id })
-	game_proxy.register_client(game_id, 'bob', ENV['HOSTNAME'], 50501)	
+	game_proxy.register_client(game_id, user_name, ENV['HOSTNAME'], 50501)	
 	puts 'now starting view'
 	GameView.new(client_proxy)
+  end
+
+  def join_game(game_id, user_name)
+    hostname, port = @broker_proxy.join_game(user_name, game_id)
+    game_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
+    client_proxy = HostEventProxy.new(game_id, game_proxy)
+    
+    pid = Thread.new{ 
+		  server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
+		  server.add_handler(HostEventProxy::INTERFACE, client_proxy)
+		  server.serve
+true
+	  }
+	  @game_list.push({ :thread => pid, :id => game_id })
+	  game_proxy.register_client(game_id, user_name, ENV['HOSTNAME'], 50501)	
+	  puts 'now starting view'
+	  GameView.new(client_proxy)
   end
   
   def next_port
