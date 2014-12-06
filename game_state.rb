@@ -58,8 +58,7 @@ class GameState
        lambda { |obj, token, coordinate| coordinate.respond_to?(:column) },
        lambda { |obj, token, coordinate| coordinate.row < obj.rows && coordinate.row >= 0 },
        lambda { |obj, token, coordinate| coordinate.column < obj.columns && coordinate.column >= 0 },
-       lambda { |obj, token, coordinate| token.is_a?(Token) },
-       lambda { |obj, token, coordinate| !obj.board.values.include?(token) }],
+       lambda { |obj, token, coordinate| token.is_a?(Token) }],
       #postconditions
       [lambda { |obj, result, token, coordinate| obj.board.values.include?(token) }])
 
