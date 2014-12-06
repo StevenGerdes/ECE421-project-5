@@ -1,4 +1,5 @@
 require './simple_event'
+require 'xmlrpc/server'
 
 class HostEventProxy
  
@@ -7,6 +8,7 @@ class HostEventProxy
 	INTERFACE = XMLRPC::interface('hosteventproxy'){
 		meth 'void on_change_fire()'
 		meth 'void on_win_fire()'
+		meth 'void test()'
 	}
 
 	def initialize(game_id, proxy)
@@ -16,9 +18,15 @@ class HostEventProxy
 		@id = game_id
 	end
 
+	def test
+		'adsf'
+	end
+
 	def on_change_fire
-		on_change.fire
-		''
+		puts 'ggg'
+		@on_change.fire
+		puts 'ddd'
+		'aaa'
 	end
 
 	def on_win_fire

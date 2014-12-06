@@ -38,16 +38,18 @@ class GameState
 
   method_contract(
       #preconditions
-      [lambda { |obj, coordinate| coordinate.respond_to?(:row) },
-       lambda { |obj, coordinate| coordinate.respond_to?(:column) },
-       lambda { |obj, coordinate| coordinate.row < obj.rows },
-       lambda { |obj, coordinate| coordinate.column < obj.columns }],
-      #postconditions
-      [lambda { |obj, result, coordiante| result.nil? || result.is_a?(Token) }])
+      [],
+	  #postconditions
+      [lambda { |obj, result, coordiante| result == '' || result.is_a?(Token) }])
 
   #Returns token at coordinate
   def get_token(coordinate)
-    @board[[coordinate.row, coordinate.column]]
+	puts coordinate
+	token = @board[[coordinate['row'], coordinate['column']]]
+	if token.nil?
+		return ''
+	end
+	return token
   end
 
   method_contract(

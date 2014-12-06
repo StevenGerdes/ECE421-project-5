@@ -1,4 +1,4 @@
 require 'xmlrpc/client'
 
-host = XMLRPC::Client.new('E5-05-11', '/RPC2', 50510).proxy('gameshost')
-puts host.register_client(1, 1, 'adfs',123)
+host = XMLRPC::Client.new(ENV['HOSTNAME'], '/RPC2', 50501).proxy('hosteventproxy')
+puts host.on_change_fire
