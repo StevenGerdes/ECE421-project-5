@@ -42,7 +42,7 @@ class GameBroker
   def create_game(user_name, player_count, game_type)
   @open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type})
 	server = get_open_server
-	server.proxy.create_game(last_id, player_count, game_type)
+	server.proxy.create_game(user_name, last_id, player_count, game_type)
 	
 	return server.hostname, server.port, last_id 	
   end
