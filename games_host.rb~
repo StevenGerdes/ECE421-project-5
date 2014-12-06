@@ -19,7 +19,7 @@ class GamesHost
 	meth 'string title(id)'
   meth 'void play(id, column)'
   meth 'void reset(id)'
-  meth 'void save_game(id)'
+  meth 'string save_game(id)'
 	meth 'void shutdown()'
 	meth 'void create_game(gameid, players, type)'
   meth 'string register_client(id, player, hostname, port)'

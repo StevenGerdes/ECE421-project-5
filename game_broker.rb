@@ -40,7 +40,7 @@ class GameBroker
       #postconditions
 	  [])
   def create_game(user_name, player_count, game_type)
-  	@open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type})
+  @open_game_list.push({:id => gen_game_id, :user1 => user_name, :game_type => game_type})
 	server = get_open_server
 	server.proxy.create_game(last_id, player_count, game_type)
 	
@@ -62,7 +62,7 @@ class GameBroker
   
   def register_games_host(hostname, port)
 	server_proxy = XMLRPC::Client.new(hostname, '/RPC2', port).proxy('gameshost')
-	server_list.push( ServerInfo.new(hostname, port, server_proxy) )
+	@server_list.push( ServerInfo.new(hostname, port, server_proxy) )
   	puts "#{port} connected"
 	'nil'
   end
@@ -87,7 +87,7 @@ class GameBroker
 
   def kill_game_hosts
 	puts 'killing'
-	server_list.each{|server|
+	@server_list.each{|server|
 	begin
 	server.proxy.shutdown
 	rescue 
@@ -103,7 +103,7 @@ class GameBroker
   end
 
   def get_open_server
-	return server_list.first	
+	return @server_list.first	
   end
 	
 
