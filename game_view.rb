@@ -62,7 +62,6 @@ class GameView
         elsif token['value'] == 'o'
           current_image = Gtk::Stock::CDROM
         end
-        puts token.to_s
 		@game_board[[row, col]].set(current_image, Gtk::IconSize::BUTTON)
       }
     }

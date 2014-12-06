@@ -19,6 +19,7 @@ class GameMain
   def initialize
 	@broker_proxy = XMLRPC::Client.new('E5-05-11', '/RPC2', 50500).proxy('gamebroker')
     @game_list = []
+	@port = 50500
 	StartView.new(self) unless $DEBUG
   end
 
@@ -38,7 +39,7 @@ class GameMain
 	client_proxy = HostEventProxy.new(game_id, game_proxy)
 
 	pid = Thread.new{ 
-		server = XMLRPC::Server.new(50501, ENV['HOSTNAME'])
+		server = XMLRPC::Server.new(next_port, ENV['HOSTNAME'])
 		server.add_handler(HostEventProxy::INTERFACE, client_proxy)
 		server.serve
 	}
@@ -48,6 +49,11 @@ class GameMain
 	GameView.new(client_proxy)
   end
   
+  def next_port
+	@port+=1
+	return @port
+  end
+
   #Broker Proxy pass throughs
   def saved_game_list(name) @broker_proxy.saved_game_list(name) end
   def open_game_list() 		@broker_proxy.open_game_list 		end
