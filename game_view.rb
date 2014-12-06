@@ -65,7 +65,7 @@ class GameView
 	       	 elsif token == 'o'
     	   	   current_image = Gtk::Stock::CDROM
      	  	 end
-			@game_board[[i, j]].set(current_image, Gtk::IconSize::BUTTON)
+			@game_board[[5-i, j]].set(current_image, Gtk::IconSize::BUTTON)
 		end
 	end
 =begin

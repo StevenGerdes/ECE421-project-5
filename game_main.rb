@@ -18,7 +18,7 @@ class GameMain
   class_invariant([])
   #if it isn't debug this starts the game launcher
   def initialize
-	@broker_proxy = RClient.new('E5-05-11', 50500, 'gamebroker')
+	@broker_proxy = RClient.new('E5-05-10', 50500, 'gamebroker')
     @game_list = []
 	@port = 50500
 	StartView.new(self) unless $DEBUG
